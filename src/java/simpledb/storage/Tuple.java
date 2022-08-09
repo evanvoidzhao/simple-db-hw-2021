@@ -13,6 +13,10 @@ public class Tuple implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    private TupleDesc tDesc;
+    private RecordId rId;
+    private final Field[] fList; 
+
     /**
      * Create a new tuple with the specified schema (type).
      *
@@ -22,6 +26,8 @@ public class Tuple implements Serializable {
      */
     public Tuple(TupleDesc td) {
         // some code goes here
+        tDesc = td;
+        fList = new Field[td.numFields()];
     }
 
     /**
@@ -29,7 +35,7 @@ public class Tuple implements Serializable {
      */
     public TupleDesc getTupleDesc() {
         // some code goes here
-        return null;
+        return tDesc;
     }
 
     /**
@@ -38,7 +44,7 @@ public class Tuple implements Serializable {
      */
     public RecordId getRecordId() {
         // some code goes here
-        return null;
+        return rId;
     }
 
     /**
@@ -49,6 +55,7 @@ public class Tuple implements Serializable {
      */
     public void setRecordId(RecordId rid) {
         // some code goes here
+        rId = rid;
     }
 
     /**
@@ -61,6 +68,10 @@ public class Tuple implements Serializable {
      */
     public void setField(int i, Field f) {
         // some code goes here
+        if (i < 0 || i >= fList.length){
+            return;
+        }
+        fList[i] = f;
     }
 
     /**
@@ -71,7 +82,10 @@ public class Tuple implements Serializable {
      */
     public Field getField(int i) {
         // some code goes here
-        return null;
+        if (i < 0 || i >= fList.length){
+            return null;
+        }
+        return fList[i];
     }
 
     /**
@@ -84,7 +98,16 @@ public class Tuple implements Serializable {
      */
     public String toString() {
         // some code goes here
-        throw new UnsupportedOperationException("Implement this");
+        StringBuilder builder = new StringBuilder();
+        Iterator<Field> iter = fields();
+        while(iter.hasNext()){
+            if (builder.length() != 0) {
+                builder.append("\n");
+            }
+            builder.append(iter.next());
+        }
+        return builder.toString();
+        //throw new UnsupportedOperationException("Implement this");
     }
 
     /**
@@ -94,7 +117,7 @@ public class Tuple implements Serializable {
     public Iterator<Field> fields()
     {
         // some code goes here
-        return null;
+        return Arrays.asList(fList).iterator();
     }
 
     /**
@@ -103,5 +126,6 @@ public class Tuple implements Serializable {
     public void resetTupleDesc(TupleDesc td)
     {
         // some code goes here
+        tDesc = td;
     }
 }
