@@ -54,7 +54,7 @@ public class RecordId implements Serializable {
         // some code goes here
         if (o instanceof RecordId){
             RecordId r = (RecordId)o;
-            if (r.getPageId() == this.pid && r.getTupleNumber() == this.tupeno){
+            if (r.getPageId().equals(this.pid) && r.getTupleNumber() == this.tupeno){
                 return true;
             }
         }
