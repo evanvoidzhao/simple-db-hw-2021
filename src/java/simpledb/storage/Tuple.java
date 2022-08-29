@@ -102,7 +102,7 @@ public class Tuple implements Serializable {
         Iterator<Field> iter = fields();
         while(iter.hasNext()){
             if (builder.length() != 0) {
-                builder.append("\n");
+                builder.append("\t");
             }
             builder.append(iter.next());
         }
