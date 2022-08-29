@@ -88,6 +88,8 @@ public class BufferPool {
         Page p = Database.getCatalog().getDatabaseFile(pid.getTableId()).readPage(pid);
         if (pageMap.size() > pageNum){
             throw new DbException("more than `numPages` requests are made for different pages.");
+        }else{
+            pageMap.put(pid, p);
         }
 
         return p;

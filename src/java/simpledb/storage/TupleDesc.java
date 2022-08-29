@@ -91,7 +91,9 @@ public class TupleDesc implements Serializable {
         }
     }
 
-    public TupleDesc() {
+    public TupleDesc(List<TDItem> items) {
+        // some code goes here
+        tList.addAll(items);
     }
 
     /**
@@ -183,16 +185,17 @@ public class TupleDesc implements Serializable {
      */
     public static TupleDesc merge(TupleDesc td1, TupleDesc td2) {
         // some code goes here
-        TupleDesc td = new TupleDesc();
+        List<TDItem> list = new ArrayList<>();
+
         Iterator<TDItem> iter1 = td1.iterator();
         while (iter1.hasNext()) {
-            td.tList.add(iter1.next());
+            list.add(iter1.next());
         }
         Iterator<TDItem> iter2 = td2.iterator();
         while (iter2.hasNext()) {
-            td.tList.add(iter2.next());
+            list.add(iter2.next());
         }
-        return td;
+        return new TupleDesc(list);
     }
 
     /**
