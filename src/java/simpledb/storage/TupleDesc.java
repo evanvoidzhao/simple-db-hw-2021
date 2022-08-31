@@ -240,6 +240,15 @@ public class TupleDesc implements Serializable {
      */
     public String toString() {
         // some code goes here
-        return "";
+        StringBuilder builder = new StringBuilder();
+        Iterator<TDItem> it = tList.iterator();
+        while(it.hasNext()){
+            if (builder.length() != 0) {
+                builder.append(",");
+            }
+            TDItem item = it.next();
+            builder.append(item.fieldType + "(" + item.fieldName +")");
+        }
+        return builder.toString();
     }
 }
