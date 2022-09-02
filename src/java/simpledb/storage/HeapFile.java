@@ -21,9 +21,9 @@ import java.util.*;
  */
 public class HeapFile implements DbFile {
 
-    private File file;
-    private TupleDesc tDesc;
-    private int id;
+    private final File file;
+    private final TupleDesc tDesc;
+    private final int id;
 
     /**
      * Constructs a heap file backed by the specified file.
@@ -115,6 +115,29 @@ public class HeapFile implements DbFile {
     public void writePage(Page page) throws IOException {
         // some code goes here
         // not necessary for lab1
+        int pgNo = page.getId().getPageNumber();
+        RandomAccessFile f = null;
+
+        if(pgNo > numPages()){
+            throw new IllegalArgumentException();
+        }
+
+        try {
+            f = new RandomAccessFile(file, "rw");
+            f.seek(pgNo * BufferPool.getPageSize());
+            f.write(page.getPageData());
+
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }finally{
+            try {
+                f.close();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -130,7 +153,21 @@ public class HeapFile implements DbFile {
     public List<Page> insertTuple(TransactionId tid, Tuple t)
             throws DbException, IOException, TransactionAbortedException {
         // some code goes here
-        return null;
+        List<Page> list = new ArrayList<>();
+        for(int pgNo = 0; pgNo<numPages();pgNo++){
+            PageId pid = new HeapPageId(getId(), pgNo);
+            HeapPage p = (HeapPage)Database.getBufferPool().getPage(tid, pid, Permissions.READ_ONLY);
+            if(p.getNumEmptySlots() > 0){
+                p.insertTuple(t);
+                list.add(p);
+                return list;
+            }
+
+        }
+
+
+
+        return list;
         // not necessary for lab1
     }
 
