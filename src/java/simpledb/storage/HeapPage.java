@@ -267,7 +267,7 @@ public class HeapPage implements Page {
         // some code goes here
         // not necessary for lab1
         PageId pageId = t.getRecordId().getPageId();
-        if(pageId != this.getId()){
+        if(!pageId.equals(this.getId())){
             throw new DbException("tuple is not on this page");
         }
         int tpnum = t.getRecordId().getTupleNumber();
