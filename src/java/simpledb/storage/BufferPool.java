@@ -9,6 +9,8 @@ import simpledb.transaction.TransactionId;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,7 +37,26 @@ public class BufferPool {
     public static final int DEFAULT_PAGES = 50;
 
     private final int pageNum;
-    private Map<PageId,Page> pageMap;
+    private FixLinkedHashMap<PageId,Page> pageMap;
+
+    private class FixLinkedHashMap<K, V> extends LinkedHashMap<K,V> {
+        private int maxSize;
+
+        public FixLinkedHashMap(int size) {
+            super();
+            this.maxSize = size;
+        }
+
+        @Override
+        protected boolean removeEldestEntry(java.util.Map.Entry<K, V> eldest) {
+            // TODO Auto-generated method stub
+            if (size() > maxSize){
+                return true;
+            }else{
+                return false;
+            }
+        }
+    }
 
     /**
      * Creates a BufferPool that caches up to numPages pages.
@@ -45,7 +66,7 @@ public class BufferPool {
     public BufferPool(int numPages) {
         // some code goes here
         pageNum = numPages;
-        pageMap = new HashMap<>(numPages);
+        pageMap = new FixLinkedHashMap<PageId,Page>(numPages);
     }
     
     public static int getPageSize() {
@@ -87,10 +108,10 @@ public class BufferPool {
 
         Page p = Database.getCatalog().getDatabaseFile(pid.getTableId()).readPage(pid);
         if (pageMap.size() > pageNum){
-            throw new DbException("more than `numPages` requests are made for different pages.");
-        }else{
-            pageMap.put(pid, p);
+            evictPage();
+            //throw new DbException("more than `numPages` requests are made for different pages.");
         }
+        pageMap.put(pid, p);
 
         return p;
     }
@@ -136,6 +157,7 @@ public class BufferPool {
     public void transactionComplete(TransactionId tid, boolean commit) {
         // some code goes here
         // not necessary for lab1|lab2
+        
     }
 
     /**
@@ -158,7 +180,11 @@ public class BufferPool {
         // some code goes here
         // not necessary for lab1
         HeapFile f =  (HeapFile) Database.getCatalog().getDatabaseFile(tableId);
-        f.insertTuple(tid, t);
+        List<Page> list = f.insertTuple(tid, t);
+        for (Page p : list){
+            p.markDirty(true, tid);
+            pageMap.put(p.getId(), p);
+        }
     }
 
     /**
@@ -179,7 +205,11 @@ public class BufferPool {
         // some code goes here
         // not necessary for lab1
         HeapFile f = (HeapFile) Database.getCatalog().getDatabaseFile(t.getRecordId().getPageId().getTableId());
-        f.deleteTuple(tid, t);
+        List<Page> list = f.deleteTuple(tid, t);
+        for (Page p : list){
+            p.markDirty(true, tid);
+            pageMap.put(p.getId(), p);
+        }
     }
 
     /**
@@ -190,7 +220,9 @@ public class BufferPool {
     public synchronized void flushAllPages() throws IOException {
         // some code goes here
         // not necessary for lab1
-
+        for (PageId p : pageMap.keySet()){
+            flushPage(p);
+        }
     }
 
     /** Remove the specific page id from the buffer pool.
@@ -213,6 +245,11 @@ public class BufferPool {
     private synchronized  void flushPage(PageId pid) throws IOException {
         // some code goes here
         // not necessary for lab1
+        Page p = pageMap.get(pid);
+        if (p.isDirty() != null){
+            Database.getCatalog().getDatabaseFile(pid.getTableId()).writePage(p);
+            p.markDirty(false, null);
+        } 
     }
 
     /** Write all pages of the specified transaction to disk.
